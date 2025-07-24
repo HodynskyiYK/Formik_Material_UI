@@ -2,12 +2,11 @@ import React from "react";
 import { useFormik } from "formik";
 import {useNavigate} from "react-router-dom";
 import * as Yup from "yup";
-import {TextField, FormLabel, Button} from "@mui/material";
+import {TextField, FormLabel, Button, CircularProgress, Box} from "@mui/material";
 import {useAppActions} from '../../hooks/useAppAction.ts'
 import {phoneRegExp} from '../../constants/regularExpression.ts'
-import type {TUser} from '../../types/users.type.ts'
 import {useAppSelector} from '../../hooks/useAppSelector.ts'
-import {LoadingState} from '../../types/common.type.ts'
+import {LoadingState, type IResponse} from '../../types/common.type.ts'
 import {Alert} from '../common/Alert.tsx'
 
 const FormSchema = Yup.object().shape({
@@ -22,13 +21,6 @@ const FormSchema = Yup.object().shape({
         .required('Phone number is required'),
 
 })
-
-interface IResponse {
-    meta: {
-        requestStatus: string
-    },
-    package: TUser
-}
 
 export const AddNewUser: React.FC = () => {
     const navigate = useNavigate();
@@ -45,81 +37,86 @@ export const AddNewUser: React.FC = () => {
         },
         validationSchema: FormSchema,
         onSubmit: async (values, { resetForm }) => {
-            const response: any = await createNewUser(values);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const response: IResponse = await createNewUser(values);
             resetForm()
-            if (response.meta.requestStatus === 'fulfilled') {
+            if (response?.meta?.requestStatus === 'fulfilled') {
                 navigate('/')
             }
         }
     })
 
     const handlerCancel = () => {
-        formik.resetForm()
-        navigate('/')
+        if (formik.dirty && !window.confirm('Are you sure you want to cancel?')) {
+            return;
+        }
+        formik.resetForm();
+        navigate('/');
     }
 
     return (
         <>
-            <form
-                onSubmit={formik.handleSubmit}
-                style={{'marginBottom': '1rem'}}
-            >
-                <FormLabel>
-                    <TextField
-                        fullWidth={true}
-                        label="Name"
-                        name="name"
-                        type="text"
-                        value={formik.values.name}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={formik.touched.name && Boolean(formik.errors.name)}
-                        helperText={formik.touched.name && formik.errors.name}
-                        disabled={isLoading}
-                    />
-                </FormLabel>
-                <FormLabel>
-                    <TextField
-                        fullWidth={true}
-                        label="Email"
-                        name="email"
-                        type="email"
-                        value={formik.values.email}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={formik.touched.email && Boolean(formik.errors.email)}
-                        helperText={formik.touched.email && formik.errors.email}
-                        disabled={isLoading}
-                    />
-                </FormLabel>
-                <FormLabel>
-                    <TextField
-                        fullWidth={true}
-                        label="Phone"
-                        name="phone"
-                        type="tel"
-                        value={formik.values.phone}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={formik.touched.phone && Boolean(formik.errors.phone)}
-                        helperText={formik.touched.phone && formik.errors.phone}
-                        disabled={isLoading}
-                    />
-                </FormLabel>
-                <div>
-                    <Button
-                        color="primary"
-                        type="submit"
-                        fullWidth={true}
-                        variant="contained"
-                        loading={isLoading}
-                    >Create New User</Button>
-                </div>
-            </form>
+            <Box mb={4}>
+                <form onSubmit={formik.handleSubmit}>
+                    <FormLabel>
+                        <TextField
+                            fullWidth={true}
+                            label="Name"
+                            name="name"
+                            type="text"
+                            value={formik.values.name}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.name && Boolean(formik.errors.name)}
+                            helperText={formik.touched.name && formik.errors.name}
+                            disabled={isLoading}
+                        />
+                    </FormLabel>
+                    <FormLabel>
+                        <TextField
+                            fullWidth={true}
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formik.values.email}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.email && Boolean(formik.errors.email)}
+                            helperText={formik.touched.email && formik.errors.email}
+                            disabled={isLoading}
+                        />
+                    </FormLabel>
+                    <FormLabel>
+                        <TextField
+                            fullWidth={true}
+                            label="Phone"
+                            name="phone"
+                            type="tel"
+                            value={formik.values.phone}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.phone && Boolean(formik.errors.phone)}
+                            helperText={formik.touched.phone && formik.errors.phone}
+                            disabled={isLoading}
+                        />
+                    </FormLabel>
+                    <div>
+                        <Button
+                            color="primary"
+                            type="submit"
+                            fullWidth={true}
+                            variant="contained"
+                        >{
+                            isLoading ? <CircularProgress size={24} /> : 'Create New User'
+                        }</Button>
+                    </div>
+                </form>
+            </Box>
             {
                 error && (
                     <Alert
-                        message={error.toString()}
+                        message={typeof error === 'string' ? error : 'An unexpected error occurred'}
                         severity={'error'}
                     />
                 )
@@ -128,7 +125,7 @@ export const AddNewUser: React.FC = () => {
                 variant="contained"
                 color="info"
                 onClick={handlerCancel}
-            >Cansel</Button>
+            >Cancel</Button>
         </>
     )
 }

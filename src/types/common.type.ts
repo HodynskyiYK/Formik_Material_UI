@@ -6,3 +6,9 @@ export const LoadingState = {
     SUCCESS: 'success' as LoadingState,
     FAILED: 'failed' as LoadingState,
 };
+
+export interface IResponse {
+    meta?: {
+        requestStatus?: string
+    }
+}
