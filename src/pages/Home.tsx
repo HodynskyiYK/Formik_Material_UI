@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { useAppActions } from '../hooks/useAppAction';
 import { useAppSelector } from '../hooks/useAppSelector';
-import Loading from '../components/common/Loading';
+import { Loading } from '../components/common/Loading';
+import { Alert } from '../components/common/Alert';
 
 const Home: React.FC = () => {
   const { fetchUsers } = useAppActions();
   const { users, status, error } = useAppSelector(state => state.users);
-
-  console.log(users)
 
   useEffect(() => {
     fetchUsers();
@@ -18,7 +17,7 @@ const Home: React.FC = () => {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <Alert message={error} severity="error" />;
   }
 
   return (
