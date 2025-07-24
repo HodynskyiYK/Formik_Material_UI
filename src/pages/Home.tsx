@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAppActions } from '../hooks/useAppAction';
 import { useAppSelector } from '../hooks/useAppSelector';
+import Loading from '../components/common/Loading';
 
 const Home: React.FC = () => {
   const { fetchUsers } = useAppActions();
@@ -13,7 +14,7 @@ const Home: React.FC = () => {
   }, []);
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   if (error) {
