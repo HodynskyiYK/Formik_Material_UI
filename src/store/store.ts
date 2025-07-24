@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import usersSlice, { fetchUsers } from "./slices/usersSlice";
+import usersSlice, {createNewUser, fetchUsers} from "./slices/usersSlice";
 
 
 export const store = configureStore({
@@ -11,6 +11,7 @@ export const store = configureStore({
 export const actions = {
     ...usersSlice.actions,
     fetchUsers,
+    createNewUser,
 }
 
 
