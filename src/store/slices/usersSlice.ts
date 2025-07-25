@@ -115,9 +115,6 @@ const usersSlice = createSlice({
                 state.error = action.error.message || "Failed to create user"
             })
             // Update user
-            .addCase(updateUser.pending, (state) => {
-                state.status = LoadingState.LOADING
-            })
             .addCase(updateUser.fulfilled, (state, action) => {
                 state.status = LoadingState.SUCCESS
                 state.userById = action.payload
