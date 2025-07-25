@@ -8,12 +8,14 @@ interface initialStateType {
     users: TUser[];
     status: LoadingState;
     error: string | null | undefined;
+    userById: TUser | null;
 }
 
 const initialState: initialStateType = {
     users: [],
     status: 'idle',
     error: null,
+    userById: null,
 };
 
 export const fetchUsers = createAsyncThunk(
@@ -29,11 +31,37 @@ export const fetchUsers = createAsyncThunk(
     }
 )
 
+export const fetchUserById = createAsyncThunk(
+    'users/fetchUserById',
+    async (id: number) => {
+        try {
+            const response  = await axios.get<TUser>(`${API_URL}/users/${id}`)
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch users by id:", error);
+            throw error;
+        }
+    }
+)
+
 export const createNewUser = createAsyncThunk(
     'users/createNewUser',
     async (user: Omit<TUser, 'id' | 'avatar'>) => {
         try {
             const response = await axios.post<TUser>(`${API_URL}/users`, user)
+            return response.data;
+        } catch (error) {
+            console.error("Failed to add user:", error);
+            throw error;
+        }
+    }
+)
+
+export const updateUser = createAsyncThunk(
+    'users/updateUser',
+    async (user: Omit<TUser, 'avatar'>) => {
+        try {
+            const response = await axios.put<TUser>(`${API_URL}/users/${user.id}`, user)
             return response.data;
         } catch (error) {
             console.error("Failed to add user:", error);
@@ -61,6 +89,19 @@ const usersSlice = createSlice({
                 state.users = [];
                 state.error = action.error.message || "Failed to fetch users";
             })
+            // Get user by id
+            .addCase(fetchUserById.pending, (state) => {
+                state.status = LoadingState.LOADING
+            })
+            .addCase(fetchUserById.fulfilled, (state, action) => {
+                state.status = LoadingState.SUCCESS
+                state.userById = action.payload
+            })
+            .addCase(fetchUserById.rejected, (state, action) => {
+                state.status = LoadingState.FAILED
+                state.userById = null
+                state.error = action.error.message
+            })
             // Create new user
             .addCase(createNewUser.pending, (state) => {
                 state.status = LoadingState.LOADING
@@ -70,6 +111,18 @@ const usersSlice = createSlice({
                 state.users = [...state.users, action.payload]
             })
             .addCase(createNewUser.rejected, (state, action) => {
+                state.status = LoadingState.FAILED
+                state.error = action.error.message || "Failed to create user"
+            })
+            // Update user
+            .addCase(updateUser.pending, (state) => {
+                state.status = LoadingState.LOADING
+            })
+            .addCase(updateUser.fulfilled, (state, action) => {
+                state.status = LoadingState.SUCCESS
+                state.userById = action.payload
+            })
+            .addCase(updateUser.rejected, (state, action) => {
                 state.status = LoadingState.FAILED
                 state.error = action.error.message || "Failed to create user"
             })
