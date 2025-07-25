@@ -88,7 +88,11 @@ export const deleteUser = createAsyncThunk(
 const usersSlice = createSlice({
     name: "users",
     initialState,
-    reducers: {},
+    reducers: {
+        removeUser: (state, action: PayloadAction<number>) => {
+            state.users = state.users.filter(user => Number(user.id) !== action.payload);
+        }
+    },
     extraReducers: builder => {
         builder
             // Get all users
