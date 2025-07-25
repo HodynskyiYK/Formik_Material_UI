@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {useFormik} from "formik";
 import {useNavigate} from "react-router-dom";
 import * as Yup from "yup";
@@ -28,12 +28,37 @@ interface IProps {
 }
 
 export const UserForm: React.FC<IProps> = ({user}) => {
+    const [isSuccess, setIsSuccess] = useState<boolean>(false)
     const navigate = useNavigate();
     const {updateUser, createNewUser} = useAppActions()
     const {error, status} = useAppSelector(state => state.users)
     const isLoading = status === LoadingState.LOADING
     const isUpdateUser = !!user
 
+    const handleSubmit = async (
+        values: Pick<TUser, 'name' | 'email' | 'phone'>,
+        resetForm: () => void,
+    ) => {
+        const action = isUpdateUser ? updateUser : createNewUser;
+        const data = isUpdateUser ? {
+            ...user,
+            name: values.name,
+            email: values.email,
+            phone: values.phone,
+        } : values
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const response: IResponse = await action(data);
+
+        resetForm()
+        if (response?.meta?.requestStatus === 'fulfilled') {
+            setIsSuccess(true)
+            setTimeout(() => {
+                navigate('/')
+            }, 2000)
+        }
+    }
 
     const formik = useFormik({
         initialValues: {
@@ -42,35 +67,11 @@ export const UserForm: React.FC<IProps> = ({user}) => {
             phone: isUpdateUser ? user.phone : ''
         },
         validationSchema: FormSchema,
-        onSubmit: async (values, {resetForm}) => {
-            if (isUpdateUser) {
-                const upUser: TUser = {
-                    ...user,
-                    name: values.name,
-                    email: values.email,
-                    phone: values.phone,
-                }
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const response: IResponse = await updateUser(upUser);
-                resetForm()
-                if (response?.meta?.requestStatus === 'fulfilled') {
-                    navigate('/')
-                }
-            } else {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const response: IResponse = await createNewUser(values);
-                resetForm()
-                if (response?.meta?.requestStatus === 'fulfilled') {
-                    navigate('/')
-                }
-            }
-        }
+        onSubmit: async (values, {resetForm}) => handleSubmit(values, resetForm)
     })
 
     const handlerCancel = () => {
-        if (formik.dirty && !window.confirm('Are you sure you want to cancel?')) {
+        if (formik.dirty && !window.confirm('You have unsaved changes. Are you sure you want to cancel?')) {
             return;
         }
         formik.resetForm();
@@ -140,6 +141,14 @@ export const UserForm: React.FC<IProps> = ({user}) => {
                     <Alert
                         message={typeof error === 'string' ? error : 'An unexpected error occurred'}
                         severity={'error'}
+                    />
+                )
+            }
+            {
+                isSuccess && (
+                    <Alert
+                        message={isUpdateUser ? 'User was updated successfully' : 'User was created successfully.'}
+                        severity={'success'}
                     />
                 )
             }
