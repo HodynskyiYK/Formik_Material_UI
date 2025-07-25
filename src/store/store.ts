@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import usersSlice, {createNewUser, fetchUserById, fetchUsers, updateUser} from "./slices/usersSlice";
+import usersSlice, {createNewUser, deleteUser, fetchUserById, fetchUsers, updateUser} from "./slices/usersSlice";
 
 
 export const store = configureStore({
@@ -13,7 +13,8 @@ export const actions = {
     fetchUsers,
     fetchUserById,
     createNewUser,
-    updateUser
+    updateUser,
+    deleteUser
 }
 
 

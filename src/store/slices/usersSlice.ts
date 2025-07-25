@@ -9,6 +9,7 @@ interface initialStateType {
     status: LoadingState;
     error: string | null | undefined;
     userById: TUser | null;
+    deletedUser: TUser | null;
 }
 
 const initialState: initialStateType = {
@@ -16,6 +17,7 @@ const initialState: initialStateType = {
     status: 'idle',
     error: null,
     userById: null,
+    deletedUser: null,
 };
 
 export const fetchUsers = createAsyncThunk(
@@ -65,6 +67,19 @@ export const updateUser = createAsyncThunk(
             return response.data;
         } catch (error) {
             console.error("Failed to add user:", error);
+            throw error;
+        }
+    }
+)
+
+export const deleteUser = createAsyncThunk(
+    'users/deleteUser',
+    async (id: number) => {
+        try {
+            const response = await axios.delete(`${API_URL}/users/${id}`)
+            return response.data;
+        } catch (error) {
+            console.error("Failed to delete user:", error);
             throw error;
         }
     }
@@ -122,6 +137,15 @@ const usersSlice = createSlice({
             .addCase(updateUser.rejected, (state, action) => {
                 state.status = LoadingState.FAILED
                 state.error = action.error.message || "Failed to create user"
+            })
+            // Delete user
+            .addCase(deleteUser.fulfilled, (state, action) => {
+                state.status = LoadingState.SUCCESS
+                state.deletedUser = action.payload
+            })
+            .addCase(deleteUser.rejected, (state, action) => {
+                state.status = LoadingState.FAILED
+                state.error = action.error.message
             })
     }
 })

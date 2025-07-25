@@ -56,7 +56,7 @@ export const UserForm: React.FC<IProps> = ({user}) => {
             setIsSuccess(true)
             setTimeout(() => {
                 navigate('/')
-            }, 2000)
+            }, 3000)
         }
     }
 

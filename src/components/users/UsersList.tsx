@@ -9,11 +9,11 @@ import {Grid} from '@mui/material'
 
 export const UsersList: React.FC = () => {
     const { fetchUsers } = useAppActions();
-    const { users, status, error } = useAppSelector(state => state.users);
+    const { users, status, error, deletedUser } = useAppSelector(state => state.users);
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [deletedUser]);
 
     if (status === 'loading') {
         return <Loading />;
