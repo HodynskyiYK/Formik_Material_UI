@@ -19,7 +19,7 @@ const UserPage: React.FC = () => {
         if (id) {
             fetchUserById(Number(id))
         }
-    }, []);
+    }, [id]);
 
     if (isLoading) {
         return (
