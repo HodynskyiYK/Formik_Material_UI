@@ -1,11 +1,11 @@
 import React from "react";
-import {AddNewUser} from "../components/forms/AddNewUser";
+import {UserForm} from '../components/forms/UserForm.tsx'
 
 const AddUserPage: React.FC = () => {
     return (
         <div>
             <h1>Add User</h1>
-            <AddNewUser/>
+            <UserForm />
         </div>
     );
 };
