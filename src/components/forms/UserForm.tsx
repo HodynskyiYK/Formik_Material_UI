@@ -1,5 +1,5 @@
 import React from "react";
-import { useFormik } from "formik";
+import {useFormik} from "formik";
 import {useNavigate} from "react-router-dom";
 import * as Yup from "yup";
 import {TextField, FormLabel, Button, CircularProgress, Box} from "@mui/material";
@@ -8,6 +8,7 @@ import {phoneRegExp} from '../../constants/regularExpression.ts'
 import {useAppSelector} from '../../hooks/useAppSelector.ts'
 import {LoadingState, type IResponse} from '../../types/common.type.ts'
 import {Alert} from '../common/Alert.tsx'
+import type {TUser} from '../../types/users.type.ts'
 
 const FormSchema = Yup.object().shape({
     name: Yup.string()
@@ -22,27 +23,48 @@ const FormSchema = Yup.object().shape({
 
 })
 
-export const AddNewUser: React.FC = () => {
+interface IProps {
+    user?: TUser
+}
+
+export const UserForm: React.FC<IProps> = ({user}) => {
     const navigate = useNavigate();
-    const { createNewUser } = useAppActions()
+    const {updateUser, createNewUser} = useAppActions()
     const {error, status} = useAppSelector(state => state.users)
     const isLoading = status === LoadingState.LOADING
+    const isUpdateUser = !!user
 
 
     const formik = useFormik({
         initialValues: {
-            name: '',
-            email: '',
-            phone: ''
+            name: isUpdateUser ? user.name : '',
+            email: isUpdateUser ? user.email : '',
+            phone: isUpdateUser ? user.phone : ''
         },
         validationSchema: FormSchema,
-        onSubmit: async (values, { resetForm }) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const response: IResponse = await createNewUser(values);
-            resetForm()
-            if (response?.meta?.requestStatus === 'fulfilled') {
-                navigate('/')
+        onSubmit: async (values, {resetForm}) => {
+            if (isUpdateUser) {
+                const upUser: TUser = {
+                    ...user,
+                    name: values.name,
+                    email: values.email,
+                    phone: values.phone,
+                }
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const response: IResponse = await updateUser(upUser);
+                resetForm()
+                if (response?.meta?.requestStatus === 'fulfilled') {
+                    navigate('/')
+                }
+            } else {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const response: IResponse = await createNewUser(values);
+                resetForm()
+                if (response?.meta?.requestStatus === 'fulfilled') {
+                    navigate('/')
+                }
             }
         }
     })
@@ -108,7 +130,7 @@ export const AddNewUser: React.FC = () => {
                             fullWidth={true}
                             variant="contained"
                         >{
-                            isLoading ? <CircularProgress size={24} /> : 'Create New User'
+                            isLoading ? <CircularProgress size={24}/> : isUpdateUser ? 'Update user' : 'Create New User'
                         }</Button>
                     </div>
                 </form>
